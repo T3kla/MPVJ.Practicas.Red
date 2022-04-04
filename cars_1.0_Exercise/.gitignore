@@ -72,6 +72,9 @@ Plugins/*/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+# VS Code stuff
 .vscode
-.ignore
-Subject15.code-workspace
+
+# Unreal VS Code workspaces
+*.code-workspace
