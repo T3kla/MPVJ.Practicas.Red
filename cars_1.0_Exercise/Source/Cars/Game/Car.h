@@ -21,14 +21,11 @@ class CARS_API ACar : public APawn
     // Called to bind functionality to input
     virtual void SetupPlayerInputComponent(class UInputComponent *InputComponent) override;
 
-    UCarMovementComponent *GetCarMovementComponent()
-    {
-        return m_pCarMovement;
-    }
-    UNetComponent *GetNetComponent()
-    {
-        return m_pNet;
-    }
+    UCarMovementComponent *GetCarMovementComponent();
+    UNetComponent *GetNetComponent();
+
+    void WantToPlaceBomb();
+    void CollidedWithBomb(AActor *pBomb);
 
   protected:
     // Called when the game starts or when spawned

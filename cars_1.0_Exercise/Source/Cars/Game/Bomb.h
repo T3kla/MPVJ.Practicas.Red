@@ -5,6 +5,7 @@
 #include "Bomb.generated.h"
 
 class UNetComponent;
+class UBoxComponent;
 
 UCLASS()
 class CARS_API ABomb : public APawn
@@ -24,4 +25,12 @@ class CARS_API ABomb : public APawn
     // Mesh
     UPROPERTY(EditAnywhere)
     UStaticMeshComponent *m_pMesh;
+
+    UPROPERTY(EditAnywhere)
+    UBoxComponent *m_pBox;
+
+    UFUNCTION()
+    void OnOverlapBegin(UPrimitiveComponent *OverlappedComp, AActor *OtherActor,
+                        UPrimitiveComponent *OtherComp, int32 OtherBodyIndex, bool bFromSweep,
+                        const FHitResult &SweepResult);
 };

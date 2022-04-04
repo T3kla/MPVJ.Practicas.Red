@@ -4,6 +4,7 @@
 #include "ConstructorHelpers.h"
 #include "Components/InputComponent.h"
 #include "GameNet/NetComponent.h"
+#include "Car.h"
 
 ABomb::ABomb()
 {
@@ -25,13 +26,18 @@ ABomb::ABomb()
         m_pMesh->SetMaterial(0, CarMaterial.Object);
     }
 
-    SetActorScale3D(FVector(0.2f, 0.1f, 0.05f));
-    SetActorRotation(FRotator(0.f, 270.f, 0.f));
+    SetActorScale3D(FVector(0.2f, 0.2, 0.2));
+    SetActorRotation(FRotator(0.f, 0.f, 0.f));
+
+    m_pBox = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxCppCmp"));
+    m_pBox->SetupAttachment(RootComponent);
 }
 
 void ABomb::BeginPlay()
 {
     Super::BeginPlay();
+
+    m_pBox->OnComponentBeginOverlap.AddDynamic(this, &ABomb::OnOverlapBegin);
 }
 
 void ABomb::SetupPlayerInputComponent(UInputComponent *PlayerInputComponent)
@@ -42,4 +48,14 @@ void ABomb::SetupPlayerInputComponent(UInputComponent *PlayerInputComponent)
 void ABomb::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+}
+
+void ABomb::OnOverlapBegin(UPrimitiveComponent *OverlappedComp, AActor *OtherActor,
+                           UPrimitiveComponent *OtherComp, int32 OtherBodyIndex, bool bFromSweep,
+                           const FHitResult &SweepResult)
+{
+    ACar *Car = Cast<ACar>(OtherActor);
+
+    if (Car)
+        Car->CollidedWithBomb(this);
 }

@@ -1,12 +1,12 @@
 /**
 @file Manager.h
 
-Contiene la declaración de la clase CManager, Singleton que se encarga de
-la gestión de la red del juego.
+Contiene la declaraciï¿½n de la clase CManager, Singleton que se encarga de
+la gestiï¿½n de la red del juego.
 
 @see Net::CManager
 
-@author David Llansó
+@author David Llansï¿½
 @date Diciembre, 2010
 */
 #ifndef __Net_Manager_H
@@ -28,15 +28,15 @@ namespace Net {
 
 /**
 Namespace que engloba lo relacionado con la parte de red.
-(para más información ver @ref NetGroup).
+(para mï¿½s informaciï¿½n ver @ref NetGroup).
 
-@author David Llansó
+@author David Llansï¿½
 @date Diciembre, 2010
 */
 namespace Net
 {
 	/** 
-	ID de identificación en la red.
+	ID de identificaciï¿½n en la red.
 	*/
 	typedef unsigned int NetID;
 
@@ -72,26 +72,28 @@ namespace Net
 		MAP_LOADED,
 		PLAYER_LOADED,
 		ENTITY_MSG,
-		ASSIGNED_ID
+		ASSIGNED_ID,
+        BOMB_PLACED,
+        BOMB_EXPLODED
 	};
 
 
 
 	/**
 	Gestor de la red. Sirve como interfaz para que el resto de los
-	proyectos interactúen con la red y no tengan que preocuparse de 
-	la tecnología específica usada para su implementación.
+	proyectos interactï¿½en con la red y no tengan que preocuparse de 
+	la tecnologï¿½a especï¿½fica usada para su implementaciï¿½n.
 	<p>
-	Esta clase debe ser específicamente inicializada o configurada
+	Esta clase debe ser especï¿½ficamente inicializada o configurada
 	como cliente <em>o</em> como servidor. Sin embargo, desde fuera
-	<em>puede usarse sin conocer su configuración</em> y así invocar 
-	métodos como CManager::tick() para que compruebe si se ha recibido 
-	algún mensaje o invocar a CManager::send() cuando se quiera enviar 
-	un mensaje al otro extremo de la conexión.
+	<em>puede usarse sin conocer su configuraciï¿½n</em> y asï¿½ invocar 
+	mï¿½todos como CManager::tick() para que compruebe si se ha recibido 
+	algï¿½n mensaje o invocar a CManager::send() cuando se quiera enviar 
+	un mensaje al otro extremo de la conexiï¿½n.
 
 	@ingroup NetGroup
 
-	@author David Llansó
+	@author David Llansï¿½
 	@date Diciembre, 2010
 	*/
 	class CManager
@@ -113,9 +115,9 @@ namespace Net
     typedef std::map<NetID, CConnection*> TConnectionTable;
 
 		/**
-		Devuelve la única instancia de la clase CManager.
+		Devuelve la ï¿½nica instancia de la clase CManager.
 		
-		@return Única instancia de la clase CManager.
+		@return ï¿½nica instancia de la clase CManager.
 		*/
 		static CManager* getSingletonPtr() {return _instance;}
 
@@ -128,24 +130,24 @@ namespace Net
 
 		/**
 		Libera la instancia de CManager. Debe llamarse al finalizar la 
-		aplicación.
+		aplicaciï¿½n.
 		*/
 		static void Release();
 
 		/**
-		Función llamada en cada frame para que se realicen las funciones
-		de actualización adecuadas.
+		Funciï¿½n llamada en cada frame para que se realicen las funciones
+		de actualizaciï¿½n adecuadas.
 		<p>
-		Será aquí donde consultaremos si han llegado mensajes y de ser así 
-		los procesaremos o delegaremos su proceso al módulo correspondiente.
+		Serï¿½ aquï¿½ donde consultaremos si han llegado mensajes y de ser asï¿½ 
+		los procesaremos o delegaremos su proceso al mï¿½dulo correspondiente.
 		*/
 		void tick();
 
 		/**
-		Función que sirve para enviar datos al otro lado de la conexión.
-		Si se está en modo cliente los datos se enviarán al servidor
-		mientras que si se encuentra en modo servidor la información se
-		enviará a todos los clientes registrados.
+		Funciï¿½n que sirve para enviar datos al otro lado de la conexiï¿½n.
+		Si se estï¿½ en modo cliente los datos se enviarï¿½n al servidor
+		mientras que si se encuentra en modo servidor la informaciï¿½n se
+		enviarï¿½ a todos los clientes registrados.
 
 		@param data Datos a enviar.
     */
@@ -187,18 +189,18 @@ namespace Net
 		~CManager();
 
 		/**
-		Segunda fase de la construcción del objeto. Sirve para hacer
+		Segunda fase de la construcciï¿½n del objeto. Sirve para hacer
 		inicializaciones de la propia instancia en vez de inicializaciones 
-		estáticas.
+		estï¿½ticas.
 
 		@return true si todo fue correctamente.
 		*/
 		bool open();
 
 		/**
-		Segunda fase de la destrucción del objeto. Sirve para hacer liberar 
-		los recursos de la propia instancia, la liberación de los recursos 
-		estáticos se hace en Release().
+		Segunda fase de la destrucciï¿½n del objeto. Sirve para hacer liberar 
+		los recursos de la propia instancia, la liberaciï¿½n de los recursos 
+		estï¿½ticos se hace en Release().
 		*/
 		void close();
 
@@ -212,12 +214,12 @@ namespace Net
 
 	private:
 		/**
-		Única instancia de la clase.
+		ï¿½nica instancia de la clase.
 		*/
 		static CManager* _instance;
 
 		/**
-		Factoría de objetos de red
+		Factorï¿½a de objetos de red
 		*/
 		Net::CFactory* _factory;
 
@@ -234,7 +236,7 @@ namespace Net
 		/**
 			Conexiones de red. Es decir, el servidor visto desde el cliente
 			o los clientes vistos desde el servidor. En el cliente solo se 
-			usará una y en el servidor tantas como clientes haya.
+			usarï¿½ una y en el servidor tantas como clientes haya.
 		*/
 		TConnectionTable _connections;
 
@@ -254,7 +256,7 @@ namespace Net
 		NetID _id;
 
 		/**
-		Siguiente ID de red que se asignará al próximo cliente. Solo se usa en modo 
+		Siguiente ID de red que se asignarï¿½ al prï¿½ximo cliente. Solo se usa en modo 
 		servidor.
 		*/
 		NetID _nextId;
