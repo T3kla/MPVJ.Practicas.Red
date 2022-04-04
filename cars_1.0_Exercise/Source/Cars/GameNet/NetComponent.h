@@ -1,3 +1,5 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
 #pragma once
 
 #include "CoreMinimal.h"
@@ -6,42 +8,37 @@
 
 namespace Net
 {
-class CManager;
+	class CManager;
 }
 class CGameBuffer;
 
-UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class CARS_API UNetComponent : public UActorComponent
 {
-    GENERATED_BODY()
+	GENERATED_BODY()
 
-  public:
-    UNetComponent();
+public:	
+	// Sets default values for this component's properties
+	UNetComponent();
 
-  protected:
-    virtual void BeginPlay() override;
+protected:
+	// Called when the game starts
+	virtual void BeginPlay() override;
 
-  public:
-    virtual void TickComponent(float DeltaTime, ELevelTick TickType,
-                               FActorComponentTickFunction *ThisTickFunction) override;
+public:	
+	// Called every frame
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-    void SetID(unsigned int _uID)
-    {
-        m_uID = _uID;
-    }
+	void SetID(unsigned int _uID) { m_uID = _uID; }
 
-    void SerializeData();
+	void SerializeData();
 
-    void DeserializeData(CGameBuffer *pData);
+	void DeserializeData(CGameBuffer* pData);
 
-    void SetInput(const FVector2D &_vInput)
-    {
-        m_vMovementInput = _vInput;
-    }
+	void SetInput(const FVector2D& _vInput) { m_vMovementInput = _vInput; }
 
-  private:
-    Net::CManager *m_pManager;
-
-    unsigned int m_uID;
-    FVector2D m_vMovementInput;
+private:
+	Net::CManager* m_pManager;
+	unsigned int m_uID;
+	FVector2D m_vMovementInput;
 };
