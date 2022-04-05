@@ -85,5 +85,5 @@ void ACar::WantToPlaceBomb()
 // Tell server to remove bomb
 void ACar::CollidedWithBomb(AActor *pBomb)
 {
-    m_pNet->WantToDestroyBomb(pBomb);
+    m_pNet->WantToDestroyBomb(pBomb->GetActorLocation());
 }

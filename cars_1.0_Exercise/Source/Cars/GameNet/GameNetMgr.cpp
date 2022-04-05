@@ -4,6 +4,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "CarsGameInstance.h"
 #include "Game/Car.h"
+#include "Game/Bomb.h"
 #include "GameNet/NetComponent.h"
 
 CGameNetMgr::CGameNetMgr()
@@ -12,6 +13,8 @@ CGameNetMgr::CGameNetMgr()
 
     m_pManager = Net::CManager::getSingletonPtr();
     m_pManager->addObserver(this);
+
+    Bombs.Reserve(10);
 }
 
 CGameNetMgr::CGameNetMgr(UCarsGameInstance *_pOwner) : m_pCarsGameInstance(_pOwner)
@@ -27,6 +30,11 @@ CGameNetMgr::~CGameNetMgr()
     m_pManager->removeObserver(this);
     Net::CManager::Release();
     m_pManager = nullptr;
+}
+
+bool CGameNetMgr::AmIServer()
+{
+    return m_pManager->getID() == Net::ID::SERVER;
 }
 
 void CGameNetMgr::dataPacketReceived(Net::CPacket *packet)
@@ -50,6 +58,7 @@ void CGameNetMgr::dataPacketReceived(Net::CPacket *packet)
         m_pManager->send(&oData2, true);
     }
     break;
+
     case Net::MAP_LOADED: {
         ++m_uMapLoadedNotifications;
         if (m_uMapLoadedNotifications >= m_pManager->getConnections().size())
@@ -68,6 +77,7 @@ void CGameNetMgr::dataPacketReceived(Net::CPacket *packet)
         }
     }
     break;
+
     case Net::LOAD_PLAYER: {
         unsigned int uClient;
         oData.read(uClient);
@@ -76,6 +86,7 @@ void CGameNetMgr::dataPacketReceived(Net::CPacket *packet)
         CreateCar(uClient, vPos);
     }
     break;
+
     case Net::ENTITY_MSG: {
         Net::NetID uID;
         oData.read(uID);
@@ -83,12 +94,63 @@ void CGameNetMgr::dataPacketReceived(Net::CPacket *packet)
         pCar->GetNetComponent()->DeserializeData(&oData);
     }
     break;
-    case Net::BOMB_PLACED: { // TODO: implement
+
+    case Net::BOMB_PLACE: {
+        unsigned int uClient;
         Net::NetID uID;
+        FVector vBomb;
+
+        oData.read(uClient);
         oData.read(uID);
-        ACar *pCar = m_tPlayers[uID];
-        pCar->GetNetComponent()->DeserializeData(&oData);
+        oData.read(vBomb);
+
+        if (!AmIServer())
+        {
+            PlaceBomb(uClient, vBomb);
+            return;
+        }
+
+        for (auto &rClient : m_pManager->getConnections())
+        {
+            CGameBuffer oData2;
+
+            oData2.write(Net::BOMB_PLACE);
+            oData2.write(rClient.first);
+            oData2.write(vBomb);
+
+            m_pManager->send(&oData2, true);
+        }
     }
+    break;
+
+    case Net::BOMB_EXPLODE: {
+        unsigned int uClient;
+        Net::NetID uID;
+        FVector vBomb;
+
+        oData.read(uClient);
+        oData.read(uID);
+        oData.read(vBomb);
+
+        if (!AmIServer())
+        {
+            DestroyBomb(uClient, vBomb);
+            return;
+        }
+
+        for (auto &rClient : m_pManager->getConnections())
+        {
+            CGameBuffer oData2;
+
+            oData2.write(Net::BOMB_EXPLODE);
+            oData2.write(rClient.first);
+            oData2.write(vBomb);
+
+            m_pManager->send(&oData2, true);
+        }
+    }
+    break;
+
     default:
         break;
     }
@@ -97,9 +159,7 @@ void CGameNetMgr::dataPacketReceived(Net::CPacket *packet)
 void CGameNetMgr::connectionPacketReceived(Net::CPacket *packet)
 {
     if (m_pManager->getID() == Net::ID::SERVER)
-    {
         GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, "Client connected!");
-    }
 }
 
 void CGameNetMgr::disconnectionPacketReceived(Net::CPacket *packet)
@@ -111,18 +171,52 @@ void CGameNetMgr::CreateCar(unsigned int _uClient, FVector _vPos)
     FActorSpawnParameters SpawnInfo;
     SpawnInfo.Name = FName("Car", _uClient);
     SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-    ACar *pCar = m_pCarsGameInstance->GetWorld()->SpawnActor<ACar>(_vPos, FRotator::ZeroRotator, SpawnInfo);
+    auto *pCar = m_pCarsGameInstance->GetWorld()->SpawnActor<ACar>(_vPos, FRotator::ZeroRotator, SpawnInfo);
+
     if (pCar)
     {
         pCar->GetNetComponent()->SetID(_uClient);
         m_tPlayers[_uClient] = pCar;
+
         if (_uClient == m_pManager->getID())
         {
-            APlayerController *pPC = GEngine->GetFirstLocalPlayerController(m_pCarsGameInstance->GetWorld());
+            auto *pPC = GEngine->GetFirstLocalPlayerController(m_pCarsGameInstance->GetWorld());
+
             if (pPC)
-            {
                 pPC->Possess(pCar);
-            }
         }
+    }
+}
+
+void CGameNetMgr::PlaceBomb(unsigned int _uClient, FVector vBomb)
+{
+    FActorSpawnParameters SpawnInfo;
+    SpawnInfo.Name = FName("Bomb", _uClient);
+    SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+    auto *New = m_pCarsGameInstance->GetWorld()->SpawnActor<ABomb>(vBomb, FRotator::ZeroRotator, SpawnInfo);
+
+    Bombs.Add(New);
+}
+
+void CGameNetMgr::DestroyBomb(unsigned int _uClient, FVector vBomb)
+{
+    AActor *ClosestBomb = nullptr;
+    float ClosestDist = 100000000.0f;
+
+    for (size_t i = 0; i < Bombs.Num(); i++)
+    {
+        auto Dist = FVector::DistSquaredXY(Bombs[i]->GetActorLocation(), vBomb);
+        if (Dist < ClosestDist)
+        {
+            ClosestBomb = Bombs[i];
+            ClosestDist = Dist;
+        }
+    }
+
+    if (ClosestBomb)
+    {
+        ClosestBomb->Destroy();
+        Bombs.Remove(ClosestBomb);
     }
 }

@@ -2,7 +2,7 @@
 #include "Net/Manager.h"
 #include "DrawDebugHelpers.h"
 #include "GameNet/GameBuffer.h"
-// #include "GameNet/BombBuffer.h"
+#include "GameNet/BombBuffer.h"
 #include "Game/CarMovementComponent.h"
 #include "Game/Car.h"
 
@@ -16,8 +16,6 @@ UNetComponent::UNetComponent()
 void UNetComponent::BeginPlay()
 {
     Super::BeginPlay();
-
-    Bombs.Reserve(10);
 }
 
 void UNetComponent::TickComponent(float DeltaTime, ELevelTick TickType,
@@ -54,21 +52,25 @@ void UNetComponent::SetInput(const FVector2D &_vInput)
 // Tell Server to place bomb
 void UNetComponent::WantToPlaceBomb(FVector vBomb)
 {
+    CBombBuffer oData;
+
+    oData.write(Net::NetMessageType::BOMB_PLACE);
+    oData.write(m_uID);
+    oData.write(vBomb);
+
+    m_pManager->send(&oData, true);
 }
 
 // Tell Server to destroy bomb
-void UNetComponent::WantToDestroyBomb(AActor *pBomb)
+void UNetComponent::WantToDestroyBomb(FVector vBomb)
 {
-}
+    CBombBuffer oData;
 
-// Server wants to place bomb
-void UNetComponent::PlaceBomb(CGameBuffer *pData)
-{
-}
+    oData.write(Net::NetMessageType::BOMB_EXPLODE);
+    oData.write(m_uID);
+    oData.write(vBomb);
 
-// Server wants to destroy bomb
-void UNetComponent::DestroyBomb(CGameBuffer *pData)
-{
+    m_pManager->send(&oData, true);
 }
 
 void UNetComponent::SerializeData()

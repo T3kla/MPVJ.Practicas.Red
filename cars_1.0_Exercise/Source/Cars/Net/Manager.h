@@ -73,8 +73,8 @@ namespace Net
 		PLAYER_LOADED,
 		ENTITY_MSG,
 		ASSIGNED_ID,
-        BOMB_PLACED,
-        BOMB_EXPLODED
+        BOMB_PLACE,
+        BOMB_EXPLODE
 	};
 
 

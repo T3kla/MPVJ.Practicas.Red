@@ -14,7 +14,7 @@ UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class CARS_API UNetComponent : public UActorComponent
 {
     GENERATED_BODY()
-
+    
   public:
     UNetComponent();
 
@@ -32,15 +32,10 @@ class CARS_API UNetComponent : public UActorComponent
     void DeserializeData(CGameBuffer *pData);
 
     void WantToPlaceBomb(FVector vBomb);
-    void WantToDestroyBomb(AActor *pBomb);
-
-    void PlaceBomb(CGameBuffer *pData);
-    void DestroyBomb(CGameBuffer *pData);
+    void WantToDestroyBomb(FVector vBomb);
 
   private:
     Net::CManager *m_pManager;
-
-    TArray<AActor *> Bombs;
 
     unsigned int m_uID;
     FVector2D m_vMovementInput;
