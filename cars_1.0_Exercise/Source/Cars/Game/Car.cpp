@@ -60,12 +60,12 @@ UNetComponent *ACar::GetNetComponent()
 
 void ACar::Move(float AxisValue)
 {
-    m_vMovementInput.Y = FMath::Clamp<float>(AxisValue, -1.0f, 1.0f);
+    m_vMovementInput.Y = FMath::Clamp<float>(AxisValue * !AffectedByBomb, -1.0f, 1.0f);
 }
 
 void ACar::Turn(float AxisValue)
 {
-    m_vMovementInput.X = FMath::Clamp<float>(AxisValue, -1.0f, 1.0f);
+    m_vMovementInput.X = FMath::Clamp<float>(AxisValue * !AffectedByBomb, -1.0f, 1.0f);
 }
 
 void ACar::Tick(float DeltaTime)
@@ -78,7 +78,7 @@ void ACar::Tick(float DeltaTime)
 // Tell server to place bomb
 void ACar::WantToPlaceBomb()
 {
-    auto pos = GetActorLocation() - GetActorForwardVector() * 100.f;
+    auto pos = GetActorLocation() - GetActorForwardVector() * 25.f;
     m_pNet->WantToPlaceBomb(pos);
 }
 
@@ -86,4 +86,18 @@ void ACar::WantToPlaceBomb()
 void ACar::CollidedWithBomb(AActor *pBomb)
 {
     m_pNet->WantToDestroyBomb(pBomb->GetActorLocation());
+    LoseControl();
+}
+
+void ACar::LoseControl()
+{
+    AffectedByBomb = true;
+
+    FTimerHandle Timer;
+    GetWorldTimerManager().SetTimer(Timer, this, &ACar::RegainControl, 3.f);
+}
+
+void ACar::RegainControl()
+{
+    AffectedByBomb = false;
 }

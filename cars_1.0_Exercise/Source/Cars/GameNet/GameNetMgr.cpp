@@ -96,26 +96,23 @@ void CGameNetMgr::dataPacketReceived(Net::CPacket *packet)
     break;
 
     case Net::BOMB_PLACE: {
-        unsigned int uClient;
         Net::NetID uID;
         FVector vBomb;
 
-        oData.read(uClient);
         oData.read(uID);
         oData.read(vBomb);
 
         if (!AmIServer())
         {
-            PlaceBomb(uClient, vBomb);
+            PlaceBomb(vBomb);
             return;
         }
-
-        for (auto &rClient : m_pManager->getConnections())
+        else
         {
             CGameBuffer oData2;
 
             oData2.write(Net::BOMB_PLACE);
-            oData2.write(rClient.first);
+            oData2.write(uID);
             oData2.write(vBomb);
 
             m_pManager->send(&oData2, true);
@@ -124,26 +121,23 @@ void CGameNetMgr::dataPacketReceived(Net::CPacket *packet)
     break;
 
     case Net::BOMB_EXPLODE: {
-        unsigned int uClient;
         Net::NetID uID;
         FVector vBomb;
 
-        oData.read(uClient);
         oData.read(uID);
         oData.read(vBomb);
 
         if (!AmIServer())
         {
-            DestroyBomb(uClient, vBomb);
+            DestroyBomb(vBomb);
             return;
         }
-
-        for (auto &rClient : m_pManager->getConnections())
+        else
         {
             CGameBuffer oData2;
 
             oData2.write(Net::BOMB_EXPLODE);
-            oData2.write(rClient.first);
+            oData2.write(uID);
             oData2.write(vBomb);
 
             m_pManager->send(&oData2, true);
@@ -188,10 +182,9 @@ void CGameNetMgr::CreateCar(unsigned int _uClient, FVector _vPos)
     }
 }
 
-void CGameNetMgr::PlaceBomb(unsigned int _uClient, FVector vBomb)
+void CGameNetMgr::PlaceBomb(FVector vBomb)
 {
     FActorSpawnParameters SpawnInfo;
-    SpawnInfo.Name = FName("Bomb", _uClient);
     SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
     auto *New = m_pCarsGameInstance->GetWorld()->SpawnActor<ABomb>(vBomb, FRotator::ZeroRotator, SpawnInfo);
@@ -199,14 +192,14 @@ void CGameNetMgr::PlaceBomb(unsigned int _uClient, FVector vBomb)
     Bombs.Add(New);
 }
 
-void CGameNetMgr::DestroyBomb(unsigned int _uClient, FVector vBomb)
+void CGameNetMgr::DestroyBomb(FVector vBomb)
 {
     AActor *ClosestBomb = nullptr;
     float ClosestDist = 100000000.0f;
 
     for (size_t i = 0; i < Bombs.Num(); i++)
     {
-        auto Dist = FVector::DistSquaredXY(Bombs[i]->GetActorLocation(), vBomb);
+        auto Dist = FVector::Distance(Bombs[i]->GetActorLocation(), vBomb);
         if (Dist < ClosestDist)
         {
             ClosestBomb = Bombs[i];
@@ -214,7 +207,7 @@ void CGameNetMgr::DestroyBomb(unsigned int _uClient, FVector vBomb)
         }
     }
 
-    if (ClosestBomb)
+    if (ClosestDist < 0.0001f && ClosestBomb)
     {
         ClosestBomb->Destroy();
         Bombs.Remove(ClosestBomb);

@@ -2,7 +2,6 @@
 #include "Net/Manager.h"
 #include "DrawDebugHelpers.h"
 #include "GameNet/GameBuffer.h"
-#include "GameNet/BombBuffer.h"
 #include "Game/CarMovementComponent.h"
 #include "Game/Car.h"
 
@@ -52,9 +51,9 @@ void UNetComponent::SetInput(const FVector2D &_vInput)
 // Tell Server to place bomb
 void UNetComponent::WantToPlaceBomb(FVector vBomb)
 {
-    CBombBuffer oData;
+    CGameBuffer oData;
 
-    oData.write(Net::NetMessageType::BOMB_PLACE);
+    oData.write(Net::BOMB_PLACE);
     oData.write(m_uID);
     oData.write(vBomb);
 
@@ -64,9 +63,9 @@ void UNetComponent::WantToPlaceBomb(FVector vBomb)
 // Tell Server to destroy bomb
 void UNetComponent::WantToDestroyBomb(FVector vBomb)
 {
-    CBombBuffer oData;
+    CGameBuffer oData;
 
-    oData.write(Net::NetMessageType::BOMB_EXPLODE);
+    oData.write(Net::BOMB_EXPLODE);
     oData.write(m_uID);
     oData.write(vBomb);
 

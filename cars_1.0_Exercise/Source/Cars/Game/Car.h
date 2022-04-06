@@ -27,6 +27,11 @@ class CARS_API ACar : public APawn
     void WantToPlaceBomb();
     void CollidedWithBomb(AActor *pBomb);
 
+    void LoseControl();
+    void RegainControl();
+
+    bool AffectedByBomb = false;
+
   protected:
     // Called when the game starts or when spawned
     virtual void BeginPlay() override;

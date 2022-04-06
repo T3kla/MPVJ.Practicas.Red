@@ -24,8 +24,8 @@ class CGameNetMgr : public Net::CManager::IObserver
 
     void CreateCar(unsigned int _uClient, FVector _vPos);
 
-    void PlaceBomb(unsigned int _uClient, FVector vBomb);
-    void DestroyBomb(unsigned int _uClient, FVector vBomb);
+    void PlaceBomb(FVector vBomb);
+    void DestroyBomb(FVector vBomb);
 
     TArray<AActor *> Bombs;
 
